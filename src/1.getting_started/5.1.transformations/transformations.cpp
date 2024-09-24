@@ -166,10 +166,20 @@ int main()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
+        /*
+            GLM 库从 0.9.9 版本起，默认会将矩阵类型初始化为一个零矩阵（所有元素均为 0），而不是单位矩阵（对角元素为 1，其它元素为 0）。
+            如果你使用的是 0.9.9 或 0.9.9 以上的版本，你需要将所有的矩阵初始化改为 glm::mat4 mat = glm::mat4(1.0f)。
+            如果你想与本教程的代码保持一致，请使用低于 0.9.9 版本的 GLM，或者改用上述代码初始化所有的矩阵。
+        */
+        /*
+			自己踩了一个坑，分享给大家，我把glm::mat4 trans; 定义在了渲染循环函数之外，所以发现旋转速度特别快。后来分析了一下 是矩阵不断在积累上一帧的变化。
+			正确做法就是源代码里面写的，每一帧定义一个新的矩阵，然后新矩阵通过当前时间的参数来实现一个动态的变化
+        */
         // create transformations
+        // 创建单位矩阵
         glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));        // 平移
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));  // 旋转
 
         // get matrix's uniform location and set matrix
         ourShader.use();

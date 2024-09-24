@@ -18,9 +18,14 @@ const char *vertexShaderSource ="#version 330 core\n"
     "   gl_Position = vec4(aPos, 1.0);\n"
     "}\0";
 
+/*
+    Uniform 是另一种从我们的应用程序在 CPU 上传递数据到 GPU 上的着色器的方式，但 uniform 和顶点属性有些不同。
+    首先，uniform 是 全局的 (Global)。全局意味着 uniform 变量必须在每个着色器程序对象中都是独一无二的，
+    而且它可以被着色器程序的任意着色器在任意阶段访问。第二，无论你把 uniform 值设置成什么，uniform 会一直保存它们的数据，直到它们被重置或更新。
+*/
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
-    "uniform vec4 ourColor;\n"
+    "uniform vec4 ourColor; // 在OpenGL程序代码中设定这个变量\n"
     "void main()\n"
     "{\n"
     "   FragColor = ourColor;\n"
@@ -148,6 +153,14 @@ int main()
         // update shader uniform
         double  timeValue = glfwGetTime();
         float greenValue = static_cast<float>(sin(timeValue) / 2.0 + 0.5);
+        /*
+            我们用 glGetUniformLocation 查询 uniform ourColor 的位置值。 我们为查询函数提供着色器程序和 uniform 的名字（这是我们希望获得的位置值的来源）。
+            如果 glGetUniformLocation 返回 -1 就代表没有找到这个位置值。 最后，我们可以通过 glUniform4f 函数设置 uniform 值。
+            注意，查询 uniform 地址不要求你之前使用过着色器程序，但是更新一个 uniform 之前你 必须先使用程序（调用 glUseProgram)，因为它是在当前激活的着色器程序中设置 uniform 的。
+
+            我们希望分别设定 uniform 的 4 个 float 值，所以我们通过 glUniform4f 传递我们的数据
+			glUniform4f(location, v0, v1, v2, v3)
+        */
         int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 

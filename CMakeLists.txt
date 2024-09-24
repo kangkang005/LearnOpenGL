@@ -82,12 +82,17 @@ set(1.getting_started
     3.1.shaders_uniform
     3.2.shaders_interpolation
     3.3.shaders_class
+    3.4.shaders_exercise1
+    3.5.shaders_exercise2
+    3.6.shaders_exercise3
     4.1.textures
     4.2.textures_combined
+    4.3.textures_exercise1
     4.4.textures_exercise2
     4.5.textures_exercise3
     4.6.textures_exercise4
     5.1.transformations
+    5.2.transformations_exercise1
     5.2.transformations_exercise2
     6.1.coordinate_systems
     6.2.coordinate_systems_depth
@@ -192,10 +197,10 @@ configure_file(configuration/root_directory.h.in configuration/root_directory.h)
 include_directories(${CMAKE_BINARY_DIR}/configuration)
 
 # first create relevant static libraries required for other projects
-add_library(STB_IMAGE "src/stb_image.cpp")
+add_library(STB_IMAGE "src/stb_image.cpp" )
 set(LIBS ${LIBS} STB_IMAGE)
 
-add_library(GLAD "src/glad.c")
+add_library(GLAD "src/glad.c" )
 set(LIBS ${LIBS} GLAD)
 
 macro(makeLink src dest target)
@@ -220,7 +225,7 @@ function(create_project_from_sources chapter demo)
 	else()
 		set(NAME "${chapter}__${demo}")
 	endif()
-    add_executable(${NAME} ${SOURCE})
+    add_executable(${NAME} ${SOURCE} )
     target_link_libraries(${NAME} ${LIBS})
     if(MSVC)
 		target_compile_options(${NAME} PRIVATE /std:c++17 /MP)

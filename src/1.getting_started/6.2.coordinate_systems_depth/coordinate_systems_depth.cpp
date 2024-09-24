@@ -51,6 +51,7 @@ int main()
         return -1;
     }
 
+    // 开启深度测试
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
@@ -190,6 +191,8 @@ int main()
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // 因为我们使用了深度测试，我们也想要在每次渲染迭代之前清除深度缓冲（否则前一帧的深度信息仍然保存在缓冲中）。
+        // 就像清除颜色缓冲一样，我们可以通过在 glClear 函数中指定 DEPTH_BUFFER_BIT 位来清除深度缓冲：
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
 
         // bind textures on corresponding texture units
@@ -219,6 +222,7 @@ int main()
 
         // render box
         glBindVertexArray(VAO);
+        // 使用 glDrawArrays 来绘制立方体，但这一次总共有 36 个顶点: 6个面 * 6个矩形顶点
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 

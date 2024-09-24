@@ -17,6 +17,7 @@ public:
     // ------------------------------------------------------------------------
     Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
     {
+        // 1. 从文件路径中获取顶点/片段着色器
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
@@ -24,6 +25,7 @@ public:
         std::ifstream vShaderFile;
         std::ifstream fShaderFile;
         std::ifstream gShaderFile;
+        // 保证ifstream对象可以抛出异常：
         // ensure ifstream objects can throw exceptions:
         vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -59,6 +61,7 @@ public:
         }
         const char* vShaderCode = vertexCode.c_str();
         const char * fShaderCode = fragmentCode.c_str();
+        // 2. 编译着色器
         // 2. compile shaders
         unsigned int vertex, fragment;
         // vertex shader
@@ -89,6 +92,7 @@ public:
             glAttachShader(ID, geometry);
         glLinkProgram(ID);
         checkCompileErrors(ID, "PROGRAM");
+        // 删除着色器，它们已经链接到我们的程序中了，已经不再需要了
         // delete the shaders as they're linked into our program now and no longer necessary
         glDeleteShader(vertex);
         glDeleteShader(fragment);
@@ -96,12 +100,14 @@ public:
             glDeleteShader(geometry);
 
     }
+    // 使用/激活程序
     // activate the shader
     // ------------------------------------------------------------------------
     void use() 
     { 
         glUseProgram(ID); 
     }
+    // uniform工具函数
     // utility uniform functions
     // ------------------------------------------------------------------------
     void setBool(const std::string &name, bool value) const

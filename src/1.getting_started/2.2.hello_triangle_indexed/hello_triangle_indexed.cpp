@@ -106,6 +106,9 @@ int main()
         -0.5f,  0.5f, 0.0f   // top left 
     };
     unsigned int indices[] = {  // note that we start from 0!
+        // 注意索引从0开始! 
+		// 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+		// 这样可以由下标代表顶点组合成矩形
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
     };
@@ -119,6 +122,8 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // 与 VBO 类似，我们先绑定 EBO 然后用 glBufferData 把索引复制到缓冲里。同样，和 VBO 类似，
+    // 我们会把这些函数调用放在绑定和解绑函数调用之间，只不过这次我们把缓冲的类型定义为 GL_ELEMENT_ARRAY_BUFFER
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
@@ -135,6 +140,28 @@ int main()
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0); 
 
+    /*
+	    // ..:: 初始化代码 :: ..
+		// 1. 绑定顶点数组对象
+		glBindVertexArray(VAO);
+		// 2. 把我们的顶点数组复制到一个顶点缓冲中，供OpenGL使用
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// 3. 复制我们的索引数组到一个索引缓冲中，供OpenGL使用
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		// 4. 设定顶点属性指针
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		[...]
+
+		// ..:: 绘制代码（渲染循环中） :: ..
+		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+    */
 
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -156,6 +183,13 @@ int main()
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 6);
+        /*
+			用 glDrawElements 来替换 glDrawArrays 函数，表示我们要从索引缓冲区渲染三角形。使用 glDrawElements 时，我们会使用当前绑定的索引缓冲对象中的索引进行绘制:
+				第一个参数指定了我们绘制的模式，这个和 glDrawArrays 的一样。
+				第二个参数是我们打算绘制顶点的个数，这里填 6，也就是说我们一共需要绘制 6 个顶点。
+				第三个参数是索引的类型，这里是 GL_UNSIGNED_INT。
+				最后一个参数里我们可以指定 EBO 中的偏移量（或者传递一个索引数组，但是这是当你不在使用索引缓冲对象的时候），但是我们会在这里填写 0。
+        */
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time 
  

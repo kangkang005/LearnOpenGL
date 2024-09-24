@@ -11,13 +11,13 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const char *vertexShaderSource ="#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec3 aColor;\n"
+    "layout (location = 0) in vec3 aPos; // 位置变量的属性位置值为 0\n"
+    "layout (location = 1) in vec3 aColor; // 颜色变量的属性位置值为 1\n"
     "out vec3 ourColor;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos, 1.0);\n"
-    "   ourColor = aColor;\n"
+    "   ourColor = aColor; // 将ourColor设置为我们从顶点数据那里得到的输入颜色\n"
     "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
@@ -101,6 +101,7 @@ int main()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    // 把颜色数据加进顶点数据中。我们将把颜色数据添加为 3 个 float 值至 vertices 数组。我们将把三角形的三个角分别指定为红色、绿色和蓝色。
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
@@ -120,11 +121,19 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    /*
+        glVertexAttribPointer 函数的前几个参数比较明了。这次我们配置属性位置值为 1 的顶点属性。颜色值有 3 个 float 那么大，我们不去标准化这些值。
+
+		由于我们现在有了两个顶点属性，我们不得不重新计算步长值。为获得数据队列中下一个属性值（比如位置向量的下个 x 分量）我们必须向右移动 6 个 float，
+        其中 3 个是位置值，另外 3 个是颜色值。这使我们的步长值为 6 乘以 float 的字节数（=24 字节）。
+
+		同样，这次我们必须指定一个偏移量。对于每个顶点来说，位置顶点属性在前，所以它的偏移量是 0。颜色属性紧随位置数据之后，所以偏移量就是 3 * sizeof(float)，用字节来计算就是 12 字节。
+    */
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float))); // 偏移量为 3 * sizeof(float)
     glEnableVertexAttribArray(1);
 
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other

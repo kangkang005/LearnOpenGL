@@ -169,12 +169,24 @@ int main()
         // activate shader
         ourShader.use();
       
+        // Vclip = Mprojection * Mview * Mmodel * Vlocal
         // create transformations
         glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
+        // 让我们变换一下我们的平面，将其绕着 x 轴旋转，使它看起来像放在地上一样。
         model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        // 透视投影
+        /*
+            glm::perspective 所做的其实就是创建了一个定义了可视空间的大平截头体:
+				1. 第一个参数定义了 fov 的值，它表示的是 视野 (Field of View)，并且设置了观察空间的大小。
+					如果想要一个真实的观察效果，它的值通常设置为 45.0f，但想要一个毁灭战士 (DOOM, 经典的系列第一人称射击游戏) 
+					风格的结果你可以将其设置一个更大的值。
+                2. 第二个参数设置了宽高比，由视口的宽除以高所得。
+                3. 第三和第四个参数设置了平截头体的近和远平面。我们通常设置近距离为 0.1f，而远距离设为 100.0f。所有在近平面和远平面内且处于平截头体内的顶点都会被渲染。
+        */
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
