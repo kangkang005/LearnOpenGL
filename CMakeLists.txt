@@ -97,10 +97,13 @@ set(1.getting_started
     6.1.coordinate_systems
     6.2.coordinate_systems_depth
     6.3.coordinate_systems_multiple
+    6.4.coordinate_systems_exercise3
     7.1.camera_circle
     7.2.camera_keyboard_dt
     7.3.camera_mouse_zoom
     7.4.camera_class
+    7.5.camera_exercise1
+    7.6.camera_exercise2
 )
 
 set(2.lighting
@@ -202,6 +205,14 @@ set(LIBS ${LIBS} STB_IMAGE)
 
 add_library(GLAD "src/glad.c" )
 set(LIBS ${LIBS} GLAD)
+
+# add imgui library
+# replace glfw library from imgui to learnopengl
+set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/includes/imgui")
+file(GLOB IMGUI_SOURCES ${IMGUI_DIR}/*.cpp ${IMGUI_DIR}/backends/*.cpp)
+add_library(ImGui ${IMGUI_SOURCES})
+target_include_directories(ImGui PUBLIC ${IMGUI_DIR})
+set(LIBS ${LIBS} ImGui)
 
 macro(makeLink src dest target)
   add_custom_command(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${src} ${dest}  DEPENDS  ${dest} COMMENT "mklink ${src} -> ${dest}")

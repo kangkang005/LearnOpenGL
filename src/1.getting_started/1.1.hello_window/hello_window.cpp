@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <imgui_all.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -46,6 +48,19 @@ int main()
         return -1;
     }    
 
+    //设置ImGui上下文
+    IMGUI_CHECKVERSION();    // 检查版本
+    ImGui::CreateContext();  // 创建上下文
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    //设置颜色风格
+    ImGui::StyleColorsDark();
+
+    //Setup Platform/Render bindings
+    ImGui_ImplGlfw_InitForOpenGL(window, true);  //在GLFW窗口上进行初始化
+    ImGui_ImplOpenGL3_Init();
+
+
     // render loop
     // -----------
     // glfwWindowShouldClose 函数在我们每次循环的开始前检查一次 GLFW 是否被要求退出，如果是的话，该函数返回 true，渲染循环将停止运行，之后我们就可以关闭应用程序。
@@ -55,6 +70,31 @@ int main()
         // -----
         processInput(window);
 
+        //Start the Dear ImGui frame  启动ImGui Frame框架
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            //开始绘制ImGui
+            ImGui::Begin("IBinary Windows");//Create a window called "Hello,world!" and append into it.
+            //窗口控件逻辑放在这
+            ImGui::Text("IBinary Blog");
+            //ImGui::SameLine();
+            ImGui::Indent();//另一起行制表符开始绘制Button
+            ImGui::Button("2222", ImVec2(100, 50));
+
+            ImGui::End();
+        }
+
+        //Show another simple window
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        //Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());//必须在绘制完Open之后接着绘制Imgui
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         // glfwSwapBuffers 函数会交换颜色缓冲（它是一个储存着 GLFW 窗口每一个像素颜色值的大缓冲），它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上。
@@ -62,6 +102,10 @@ int main()
         // glfwPollEvents 函数检查有没有触发什么事件（比如键盘输入、鼠标移动等）、更新窗口状态，并调用对应的回调函数（可以通过回调方法手动设置）。
         glfwPollEvents();
     }
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------

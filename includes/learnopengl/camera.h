@@ -111,6 +111,8 @@ public:
     }
 
 private:
+    // 视角移动的updateCameraVectors方法其实就是把摄像机的初始front向量旋转绕y轴转yaw角度，绕x轴绕pitch角度，直接用旋转矩阵乘上初始front向量就行了。yaw的初始-90度也没啥必要
+    // 初始摄像机是在(0, 0, 3), 看向原点，所以初始front是(0, 0, -1)
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
     {

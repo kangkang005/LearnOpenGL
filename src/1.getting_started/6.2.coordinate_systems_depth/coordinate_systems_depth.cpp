@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include <imgui_all.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -50,6 +52,22 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
 
     // ¿ªÆôÉî¶È²âÊÔ
     // configure global opengl state
@@ -180,6 +198,11 @@ int main()
     ourShader.setInt("texture2", 1);
 
 
+	float fov = 45.0f;
+    float aspect = (float)SCR_WIDTH;
+    float ratio = (float)SCR_HEIGHT;
+    glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -205,12 +228,29 @@ int main()
         ourShader.use();
 
         // create transformations
+		float aspect_ratio = aspect / ratio;
         glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         glm::mat4 view          = glm::mat4(1.0f);
         glm::mat4 projection    = glm::mat4(1.0f);
         model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        view  = glm::translate(view, pos);
+        projection = glm::perspective(glm::radians(fov), aspect_ratio, 0.1f, 100.0f);
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            ImGui::Begin("View", 0, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::SliderFloat("Fov", &fov, 0.0f, 90.0f);
+            ImGui::SliderFloat3("Position", &pos.x, -3.0f, 3.0f);
+            ImGui::SliderFloat("Aspect", &aspect, 0.0f, 1000.0f);
+            ImGui::SliderFloat("Ratio", &ratio, 0.0f, 1000.0f);
+            ImGui::Text("aspect-ratio: %0.3f", aspect_ratio);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
         unsigned int viewLoc  = glGetUniformLocation(ourShader.ID, "view");
@@ -226,11 +266,19 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------

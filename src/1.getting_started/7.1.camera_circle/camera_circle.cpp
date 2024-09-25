@@ -224,6 +224,9 @@ int main()
         float radius = 10.0f;
         float camX = static_cast<float>(sin(glfwGetTime()) * radius);
         float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
+        // camera position, object position, up vector
+        // 在 OpenGL 的众多坐标系中，存在一个世界坐标系和一个摄像机坐标系，视图矩阵的作用就是将世界坐标系内的坐标转换成摄像机坐标系内的坐标。
+        // 摄像机绕y轴旋转, 相机位置：glm::vec3(camX, 0.0f, camZ), 目标位置（世界坐标系）：glm::vec3(0.0f, 0.0f, 0.0f), 上向量: glm::vec3(0.0f, 1.0f, 0.0f)
         view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         ourShader.setMat4("view", view);
 

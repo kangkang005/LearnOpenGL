@@ -25,6 +25,8 @@
 
 #include <iostream>
 
+#include <imgui_all.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
@@ -65,6 +67,21 @@ int main()
         return -1;
     }
 
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
     // build and compile our shader program
     // ------------------------------------
     Shader ourShader("shader.vs", "shader.fs"); // you can name your shader files however you like
@@ -99,6 +116,9 @@ int main()
     // glBindVertexArray(0);
 
 
+	// æ≤Ã¨“∆÷¡ ”Õº◊Ó”“±ﬂ
+	float offset = 0.5f;
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -107,30 +127,45 @@ int main()
         // -----
         processInput(window);
 
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            ImGui::Begin("Move Rectangle", 0, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::SliderFloat("Move", &offset, -0.5f, 0.5f);
+            ImGui::End();
+        }
+
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // render the triangle
-        ourShader.use();
-
-        // æ≤Ã¨“∆÷¡ ”Õº◊Ó”“±ﬂ
-		//float offset = 0.5f;
-
         // ∂ØÃ¨◊Û”“∆Ω“∆
-        double  timeValue = glfwGetTime();
-        float offset = static_cast<float>(sin(timeValue) / 2.0);
+        //double  timeValue = glfwGetTime();
+        //float offset = static_cast<float>(sin(timeValue) / 2.0);
 		ourShader.setFloat("xOffset", offset);
 
+        // render the triangle
+        ourShader.use();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
