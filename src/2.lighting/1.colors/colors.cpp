@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include <imgui_all.h>
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -21,7 +23,13 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+// Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(
+    glm::vec3(3.7342, 2.0652f, -1.6181f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
+    144.3973f,
+    -26.8f
+);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -30,6 +38,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// 声明一个全局 vec3 变量来表示光源在场景的世界空间坐标中的位置
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
@@ -70,6 +79,21 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
 
     // configure global opengl state
     // -----------------------------
@@ -144,17 +168,37 @@ int main()
     glGenVertexArrays(1, &lightCubeVAO);
     glBindVertexArray(lightCubeVAO);
 
+    // 只需要绑定VBO不用再次设置VBO的数据，因为箱子的VBO数据中已经包含了正确的立方体顶点数据
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // we only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need (it's already bound, but we do it again for educational purposes)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+    // 设置灯立方体的顶点属性（对我们的灯来说仅仅只有位置数据）
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+
+    glm::vec3 objectColor(1.0f, 0.5f, 0.31f);
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            ImGui::Begin("Color", 0, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::ColorEdit3("Object", (float*) & objectColor, ImGuiColorEditFlags_NoPicker);
+            ImGui::ColorEdit3("Light", (float*) & lightColor, ImGuiColorEditFlags_NoPicker);
+            ImGui::ColorEdit3("Reflection", (float*) & (objectColor * lightColor), ImGuiColorEditFlags_NoPicker);
+            ImGui::End();
+        }
+
         // per-frame time logic
         // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -172,8 +216,8 @@ int main()
         
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
-        lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-        lightingShader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("objectColor", objectColor);
+        lightingShader.setVec3("lightColor",  lightColor);
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -203,11 +247,19 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
