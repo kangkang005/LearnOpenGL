@@ -109,6 +109,9 @@ private:
         glBindVertexArray(VAO);
         // load data into vertex buffers
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        // C++ 结构体有一个很棒的特性，它们的内存布局是连续的 (Sequential)。
+        // 也就是说，如果我们将结构体作为一个数据数组使用，那么它将会以顺序排列结构体的变量，这将会直接转换为我们在数组缓冲中所需要的 float（实际上是字节）数组。
+        // 自然 sizeof 运算也可以用在结构体上来计算它的字节大小。
         // A great thing about structs is that their memory layout is sequential for all its items.
         // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
         // again translates to 3/2 floats which translates to a byte array.
@@ -121,6 +124,8 @@ private:
         // vertex Positions
         glEnableVertexAttribArray(0);	
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        // 结构体的另外一个很好的用途是它的预处理指令 offsetof(s, m)，它的第一个参数是一个结构体，第二个参数是这个结构体中变量的名字。
+        // 这个宏会返回那个变量距结构体头部的字节偏移量 (Byte Offset)。这正好可以用在定义 glVertexAttribPointer 函数中的偏移参数:
         // vertex normals
         glEnableVertexAttribArray(1);	
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));

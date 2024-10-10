@@ -178,6 +178,22 @@ int main()
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
 
+    /*
+      dictance contanct linear quadratic
+		距离	    常数项	一次项	二次项
+		7	    1.0	    0.7	    1.8
+		13	    1.0	    0.35	0.44
+		20	    1.0	    0.22	0.20
+		32	    1.0	    0.14	0.07
+		50	    1.0	    0.09	0.032
+		65	    1.0	    0.07	0.017
+		100	    1.0	    0.045	0.0075
+		160	    1.0	    0.027	0.0028
+		200	    1.0	    0.022	0.0019
+		325	    1.0	    0.014	0.0007
+		600	    1.0	    0.007	0.0002
+		3250	1.0	    0.0014	0.000007
+    */
 
     // render loop
     // -----------
@@ -207,6 +223,7 @@ int main()
         lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
         lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
         lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        // 光源能够覆盖 50 的距离
         lightingShader.setFloat("light.constant", 1.0f);
         lightingShader.setFloat("light.linear", 0.09f);
         lightingShader.setFloat("light.quadratic", 0.032f);

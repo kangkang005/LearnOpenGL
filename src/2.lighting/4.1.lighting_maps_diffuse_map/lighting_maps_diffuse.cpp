@@ -11,6 +11,7 @@
 #include <learnopengl/camera.h>
 
 #include <iostream>
+#include <imgui_all.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -23,7 +24,13 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+// Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(
+    glm::vec3(-1.416f, 1.46f, -2.2f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
+    53.0f,
+    -22.2f
+);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -33,10 +40,21 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+struct Light
+{
+    glm::vec3 pos;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+} light;
 
 int main()
 {
+    light.pos = {1.2f, 1.0f, 2.0f};
+    light.ambient = {0.2f, 0.2f, 0.2f};
+    light.diffuse = {0.5f, 0.5f, 0.5f};
+    light.specular = {1.0f, 1.0f, 1.0f};
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
@@ -59,11 +77,11 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    // glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -72,6 +90,21 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
 
     // configure global opengl state
     // -----------------------------
@@ -158,16 +191,34 @@ int main()
     // -----------------------------------------------------------------------------
     unsigned int diffuseMap = loadTexture(FileSystem::getPath("resources/textures/container2.png").c_str());
 
-    // shader configuration
-    // --------------------
-    lightingShader.use(); 
-    lightingShader.setInt("material.diffuse", 0);
-
+	// shader configuration
+	// --------------------
+	lightingShader.use(); 
+	lightingShader.setInt("material.diffuse", 0);
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            ImGui::Begin("Configuration", 0, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::SeparatorText("Camera");
+            ImGui::Text("Yaw: %0.3f", camera.Yaw);
+            ImGui::Text("Pitch: %0.3f", camera.Pitch);
+            ImGui::Text("Position: %0.3f, %0.3f, %0.3f", camera.Position.x, camera.Position.y, camera.Position.z);
+            ImGui::Text("World Up: %0.3f, %0.3f, %0.3f", camera.WorldUp.x, camera.WorldUp.y, camera.WorldUp.z);
+            ImGui::SeparatorText("Light");
+            ImGui::SliderFloat3("Ambient", &light.ambient.x, 0.0, 1.0);
+            ImGui::SliderFloat3("Diffuse", &light.diffuse.x, 0.0, 1.0);
+            ImGui::SliderFloat3("Specular", &light.specular.x, 0.0, 1.0);
+            
+            ImGui::End();
+        }
         // per-frame time logic
         // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -185,13 +236,13 @@ int main()
 
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
-        lightingShader.setVec3("light.position", lightPos);
+        lightingShader.setVec3("light.position", light.pos);
         lightingShader.setVec3("viewPos", camera.Position);
 
         // light properties
-        lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f); 
-        lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-        lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.setVec3("light.ambient", light.ambient); 
+        lightingShader.setVec3("light.diffuse", light.diffuse);
+        lightingShader.setVec3("light.specular", light.specular);
 
         // material properties
         lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
@@ -221,7 +272,7 @@ int main()
         lightCubeShader.setMat4("projection", projection);
         lightCubeShader.setMat4("view", view);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos);
+        model = glm::translate(model, light.pos);
         model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
         lightCubeShader.setMat4("model", model);
 
@@ -229,11 +280,19 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------

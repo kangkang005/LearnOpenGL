@@ -35,8 +35,11 @@ void main()
     vec3 lightDir = normalize(light.position - FragPos);
     
     // check if lighting is inside the spotlight cone
+    // 余弦值
     float theta = dot(lightDir, normalize(-light.direction)); 
     
+    // 角度比较转化为余弦值比较，避免通过反余弦求角度，减少计算开销
+    // 余弦函数cos()单调递减，因此用大于号 >
     if(theta > light.cutOff) // remember that we're working with angles as cosines instead of degrees so a '>' is used.
     {    
         // ambient
@@ -57,15 +60,18 @@ void main()
         float distance    = length(light.position - FragPos);
         float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
 
+        // 将不对环境光做出影响，让它总是能有一点光
+        // 我们可以将环境光分量保持不变，让环境光照不会随着距离减少，但是如果我们使用多于一个的光源，所有的环境光分量将会开始叠加，所以在这种情况下我们也希望衰减环境光照
         // ambient  *= attenuation; // remove attenuation from ambient, as otherwise at large distances the light would be darker inside than outside the spotlight due the ambient term in the else branch
         diffuse   *= attenuation;
         specular *= attenuation;   
-            
+
         vec3 result = ambient + diffuse + specular;
         FragColor = vec4(result, 1.0);
     }
     else 
     {
+        // 在聚光灯外只有环境光
         // else, use ambient light so scene isn't completely dark outside the spotlight.
         FragColor = vec4(light.ambient * texture(material.diffuse, TexCoords).rgb, 1.0);
     }

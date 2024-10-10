@@ -149,6 +149,8 @@ int main()
     // either set it manually like so:
     glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
     // or set it via the texture class
+    // shader.setInt("xxx", value)
+	// 这里的 value 是 GL_TEXTURE0 + value 所对应的 active texture。
     ourShader.setInt("texture2", 1);
 
 

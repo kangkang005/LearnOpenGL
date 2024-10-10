@@ -50,6 +50,7 @@ void main()
     // spotlight (soft edges)
     float theta = dot(lightDir, normalize(-light.direction)); 
     float epsilon = (light.cutOff - light.outerCutOff);
+    // 使用了 clamp 函数，它把第一个参数约束 (Clamp) 在了 0.0 到 1.0 之间。这保证强度值不会在 [0, 1] 区间之外。
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     diffuse  *= intensity;
     specular *= intensity;

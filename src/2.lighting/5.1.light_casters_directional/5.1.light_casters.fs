@@ -8,7 +8,7 @@ struct Material {
 }; 
 
 struct Light {
-    //vec3 position;
+    //vec3 position;    // 使用定向光就不再需要了
     vec3 direction;
 
     vec3 ambient;
@@ -32,6 +32,9 @@ void main()
     // diffuse 
     vec3 norm = normalize(Normal);
     // vec3 lightDir = normalize(light.position - FragPos);
+    // 注意我们首先对 light.direction 向量取反。我们目前使用的光照计算需求一个从片段 至光源的光线方向，
+    // 但人们更习惯定义定向光为一个从光源出发的全局方向。所以我们需要对全局光照方向向量取反来改变它的方向，
+    // 它现在是一个指向光源的方向向量了。而且，记得对向量进行标准化，假设输入向量为一个单位向量是很不明智的。
     vec3 lightDir = normalize(-light.direction);  
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diff * texture(material.diffuse, TexCoords).rgb;  

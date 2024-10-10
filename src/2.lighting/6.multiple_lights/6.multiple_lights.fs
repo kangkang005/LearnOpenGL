@@ -47,12 +47,14 @@ struct SpotLight {
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
+in vec4 View;
 
 uniform vec3 viewPos;
 uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 uniform SpotLight spotLight;
 uniform Material material;
+uniform sampler2D spotlightMap;
 
 // function prototypes
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -140,8 +142,14 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
     vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+	vec2 texcoord = normalize(View.xyz).xy;
+    // 可以直接使用顶点在观察空间的x，y值充当纹理坐标，不过要注意观察空间中的坐标原点坐落在屏幕正中心，直接使用会导致纹理的左下角出现在屏幕中心，
+    // 所以在使用时要把横纵坐标分别加上0.5，让纹理的中心与屏幕中心对齐，纹理环绕方式最好设置为GL_CLAMP_TO_BORDER
+	vec3 spotdiffuse = texture(spotlightMap, (texcoord.xy) / 0.5 + 0.5).rgb * diff;
     ambient *= attenuation * intensity;
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
-    return (ambient + diffuse + specular);
+	spotdiffuse *= attenuation * intensity;
+            
+    return (ambient + diffuse + specular + spotdiffuse);
 }

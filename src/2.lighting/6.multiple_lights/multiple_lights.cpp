@@ -16,7 +16,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-unsigned int loadTexture(const char *path);
+unsigned int loadTexture(const char *path, bool reverse = false);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -178,12 +178,14 @@ int main()
     // -----------------------------------------------------------------------------
     unsigned int diffuseMap = loadTexture(FileSystem::getPath("resources/textures/container2.png").c_str());
     unsigned int specularMap = loadTexture(FileSystem::getPath("resources/textures/container2_specular.png").c_str());
+    unsigned int spotlightMap = loadTexture(FileSystem::getPath("resources/textures/awesomeface.png").c_str(), true);
 
     // shader configuration
     // --------------------
     lightingShader.use();
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
+    lightingShader.setInt("spotlightMap", 2);
 
 
     // render loop
@@ -281,6 +283,9 @@ int main()
         // bind specular map
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, specularMap);
+        // bind spotlight map
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, spotlightMap);
 
         // render containers
         glBindVertexArray(cubeVAO);
@@ -389,12 +394,13 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 // utility function for loading a 2D texture from file
 // ---------------------------------------------------
-unsigned int loadTexture(char const * path)
+unsigned int loadTexture(char const * path, bool reverse)
 {
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nrComponents;
+    stbi_set_flip_vertically_on_load(reverse);
     unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
     if (data)
     {

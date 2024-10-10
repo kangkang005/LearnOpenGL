@@ -23,7 +23,13 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+// Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(
+    glm::vec3(-1.416f, 1.46f, -2.2f),
+    glm::vec3(0.0f, 1.0f, 0.0f),
+    53.0f,
+    -22.2f
+);
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -209,6 +215,9 @@ int main()
         // world transformation
         glm::mat4 model = glm::mat4(1.0f);
         lightingShader.setMat4("model", model);
+
+        lightingShader.setFloat("matrixlight", (1.0 + sin(glfwGetTime())) / 2 + 0.5);
+        lightingShader.setFloat("matrixmove", glfwGetTime());
 
         // bind diffuse map
         glActiveTexture(GL_TEXTURE0);

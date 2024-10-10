@@ -175,6 +175,15 @@ int main()
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
 
+    /*
+		余弦值   角度            内切光角度        外切光角度
+		0.87	30	    0.91	25	    0.82	35	        0.91 - 0.82 = 0.09	        0.87 - 0.82 / 0.09 = 0.56
+		0.9	    26	    0.91	25	    0.82	35	        0.91 - 0.82 = 0.09	        0.9 - 0.82 / 0.09 = 0.89
+		0.97	14	    0.91	25	    0.82	35	        0.91 - 0.82 = 0.09	        0.97 - 0.82 / 0.09 = 1.67
+		0.83	34	    0.91	25	    0.82	35	        0.91 - 0.82 = 0.09	        0.83 - 0.82 / 0.09 = 0.11
+		0.64	50	    0.91	25	    0.82	35	        0.91 - 0.82 = 0.09	        0.64 - 0.82 / 0.09 = -2.0
+		0.966	15	    0.9978	12.5	0.953	17.5	    0.9978 - 0.953 = 0.0448	    0.966 - 0.953 / 0.0448 = 0.29
+    */
 
     // render loop
     // -----------
@@ -199,6 +208,7 @@ int main()
         lightingShader.use();
         lightingShader.setVec3("light.position", camera.Position);
         lightingShader.setVec3("light.direction", camera.Front);
+        // 切光角是 12.5，外切光角是 17.5
         lightingShader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
         lightingShader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
         lightingShader.setVec3("viewPos", camera.Position);
